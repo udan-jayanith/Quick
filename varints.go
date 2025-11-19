@@ -24,12 +24,13 @@ func ToVarint(v int64) ([]byte, error) {
 	} else {
 		return []byte{}, IntegerOverflow
 	}
-	buf := make([]byte, bytes)
+	buf := make([]byte, 8)
 
 	_, err := binary.Encode(buf, binary.BigEndian, v)
 	if err != nil {
 		return buf, err
 	}
+	buf = buf[len(buf)-bytes:]
 
 	switch bytes {
 	case 2:
@@ -69,14 +70,14 @@ func VarintToInt64(b []byte) (int64, error) {
 	}
 	b[0] = b[0] & 0b_00_11_11_11
 
-	if len(b) > length || length == 0 {
+	if length == 0 {
 		return 0, IntegerOverflow
 	}
 
-	buf := make([]byte, length-len(b))
+	buf := make([]byte, 8-len(b))
 	buf = append(buf, b...)
 
 	var v int64
-	_, err := binary.Decode(b, binary.BigEndian, &v)
+	_, err := binary.Decode(buf, binary.BigEndian, &v)
 	return v, err
 }
