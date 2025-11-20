@@ -27,5 +27,5 @@ func TestVarInt(t *testing.T) {
 }
 
 func TestReadVarint62(t *testing.T){
-	
+	t.Fatal("Test failed")
 }
