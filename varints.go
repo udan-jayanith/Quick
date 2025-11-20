@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-func Int62ToVarint(v int62) ([]byte, error) {
+func Int62ToVarint(v Int62) ([]byte, error) {
 	/*
 		2MSB	Length	Usable Bits	 Range
 		00		1		6			 0-63
@@ -47,7 +47,7 @@ func Int62ToVarint(v int62) ([]byte, error) {
 }
 
 // This is actually int62
-func VarintToInt62(b []byte) (int62, error) {
+func VarintToInt62(b []byte) (Int62, error) {
 	if len(b) == 0 || len(b) > 8 {
 		return 0, IntegerOverflow
 	}
@@ -57,12 +57,12 @@ func VarintToInt62(b []byte) (int62, error) {
 	buf := make([]byte, 8-len(b))
 	buf = append(buf, b...)
 
-	var v int64
+	var v Int62
 	_, err := binary.Decode(buf, binary.BigEndian, &v)
 	return v, err
 }
 
-func ReadVarint62(rd *bufio.Reader) (int62, error) {
+func ReadVarint62(rd *bufio.Reader) (Int62, error) {
 	/*
 		2MSB	Length	Usable Bits	 Range
 		00		1		6			 0-63

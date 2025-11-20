@@ -4,13 +4,19 @@ import (
 	"errors"
 )
 
-type int62 = int64
+// MSB bits is needed for variable sized int62 encoding and decoding.
+// StreamType bits is the LSB. 
+type Int62 uint64
 
 const (
-	MaxStreamID int64 = (int64(1) << 62) - 1 // 2^62-1
+	MaxStreamID Int62 = Int62((uint64(1) << 62) - 1) // 2^62-1
 )
 
-type StreamType = int62
+func (int62 Int62) IsOverflowing() bool {
+	return int62 > MaxStreamID
+}
+
+type StreamType = Int62
 
 const (
 	ClientInitiatedBidi StreamType = iota + 0b_00 // 0b_00
@@ -20,12 +26,12 @@ const (
 )
 
 type StreamID struct {
-	streamID int64
+	streamID Int62
 }
 
 func NewStreamID(streamType StreamType) StreamID {
 	streamId := StreamID{
-		streamID: int64(streamType),
+		streamID: streamType,
 	}
 
 	return streamId
@@ -37,7 +43,7 @@ var (
 
 func (si *StreamID) Increment() error {
 	si.streamID += 4
-	if si.streamID > MaxStreamID {
+	if si.streamID.IsOverflowing() {
 		si.streamID -= 4
 		return IntegerOverflow
 	}
@@ -45,7 +51,7 @@ func (si *StreamID) Increment() error {
 }
 
 func (si *StreamID) StreamType() StreamType {
-	return si.streamID & 0b_11
+	return StreamType(si.streamID & 0b_11)
 }
 
 func (si *StreamID) ToVariableLength() ([]byte, error) {

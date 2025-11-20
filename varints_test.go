@@ -10,7 +10,7 @@ import (
 )
 
 func TestVarInt(t *testing.T) {
-	for _, num := range [...]int64{0, 60, 63, 16383, 1073741823, 4611686018427387903, 4611686018427387903 / 2} {
+	for _, num := range [...]quick.Int62{0, 60, 63, 16383, 1073741823, 4611686018427387903, 4611686018427387903 / 2} {
 		b, err := quick.Int62ToVarint(num)
 		if err != nil {
 			t.Fatal(err)
@@ -54,7 +54,7 @@ func TestReadVarint62(t *testing.T) {
 	}
 
 	{
-		var input int64 = 1073741823
+		var input quick.Int62 = 1073741823
 		b, err := quick.Int62ToVarint(input)
 		if err != nil {
 			t.Fatal(err.Error())
