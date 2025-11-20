@@ -14,22 +14,59 @@ STREAM Frame {
 }
 */
 
-// 0x08 to 0x0f
+// 8 bits long
 type StreamFrameType uint8
 
-func (sft StreamFrameType) Offset() bool {
-	notImplemented()
-	return false
+func (sft StreamFrameType) IsValid() bool {
+	if sft > 15 || sft < 8 {
+		return false
+	}
+	return true
 }
 
-func (sft StreamFrameType) Length() bool {
-	notImplemented()
-	return false
+func (sft StreamFrameType) GetOffset() bool {
+	return sft&0b_00_000_100 == 0b_00_000_100
 }
 
-func (sft StreamFrameType) Fin() bool {
-	notImplemented()
-	return false
+func (sft StreamFrameType) GetLength() bool {
+	return sft&0b_00_00_00_10 == 0b_00_00_00_10
+}
+
+// The FIN bit (0x01) indicates that the frame marks the end of the stream.
+// The final size of the stream is the sum of the offset and the length of this frame.
+func (sft StreamFrameType) GetFin() bool {
+	return sft&0b_00_00_00_01 == 0b_00_00_00_01
+}
+
+func NewStreamFrameType() StreamFrameType {
+	return 0
+}
+
+func (sft StreamFrameType) SetOffset(v bool) {
+	//0b_00_000_100
+	if v {
+		sft = sft | 0b_00_000_100
+	} else {
+		sft = sft & 0b_11_111_011
+	}
+}
+
+func (sft StreamFrameType) SetLength(v bool) {
+	//0b_00_00_00_10
+	if v {
+		sft = sft | 0b_00_00_00_10
+	} else {
+		sft = sft & 0b_11_11_11_01
+	}
+}
+
+func (sft StreamFrameType) SetFin(v bool) {
+	//0b_00_00_00_01
+	if v {
+		sft = sft | 0b_00_00_00_01
+	} else {
+		sft = sft & 0b_11_11_11_10
+	}
 }
 
 // STREAM frames implicitly create a stream and carry stream data.
