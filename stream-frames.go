@@ -1,18 +1,9 @@
 package Quick
 
 import (
+	"bufio"
 	"io"
 )
-
-/*
-STREAM Frame {
-  Type (i) = 0x08..0x0f,
-  Stream ID (i),
-  [Offset (i)],
-  [Length (i)],
-  Stream Data (..),
-}
-*/
 
 // 8 bits long
 type StreamFrameType uint8
@@ -69,6 +60,16 @@ func (sft StreamFrameType) SetFin(v bool) {
 	}
 }
 
+/*
+STREAM Frame {
+  Type (i) = 0x08..0x0f,
+  Stream ID (i),
+  [Offset (i)],
+  [Length (i)],
+  Stream Data (..),
+}
+*/
+
 // STREAM frames implicitly create a stream and carry stream data.
 type StreamFrame struct {
 	Type     StreamFrameType //Half the byte is empty. Only LS 4 bytes is in use.
@@ -84,4 +85,9 @@ type StreamFrame struct {
 	// Offset of the the stream and the Length of the frame cannot overflow int62.
 
 	StreamData io.Reader
+}
+
+func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, error) {
+	sf := StreamFrame{}
+	return sf, nil
 }
