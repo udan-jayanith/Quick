@@ -34,30 +34,30 @@ func NewStreamFrameType() StreamFrameType {
 	return 0
 }
 
-func (sft StreamFrameType) SetOffset(v bool) {
+func (sft StreamFrameType) SetOffset(v bool) StreamFrameType {
 	//0b_00_000_100
 	if v {
-		sft = sft | 0b_00_000_100
+		return sft | 0b_00_000_100
 	} else {
-		sft = sft & 0b_11_111_011
+		return sft & 0b_11_111_011
 	}
 }
 
-func (sft StreamFrameType) SetLength(v bool) {
+func (sft StreamFrameType) SetLength(v bool) StreamFrameType {
 	//0b_00_00_00_10
 	if v {
-		sft = sft | 0b_00_00_00_10
+		return sft | 0b_00_00_00_10
 	} else {
-		sft = sft & 0b_11_11_11_01
+		return sft & 0b_11_11_11_01
 	}
 }
 
-func (sft StreamFrameType) SetFin(v bool) {
+func (sft StreamFrameType) SetFin(v bool) StreamFrameType {
 	//0b_00_00_00_01
 	if v {
-		sft = sft | 0b_00_00_00_01
+		return sft | 0b_00_00_00_01
 	} else {
-		sft = sft & 0b_11_11_11_10
+		return sft & 0b_11_11_11_10
 	}
 }
 

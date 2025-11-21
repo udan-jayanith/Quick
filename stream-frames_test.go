@@ -67,3 +67,17 @@ func TestStreamFrameTypeGetters(t *testing.T) {
 		}
 	}
 }
+
+func TestStreamFrameTypeSetters(t *testing.T) {
+	for i, fType := range fTypeTestcases {
+		frameType := quick.NewStreamFrameType()
+		frameType = frameType.SetLength(fType.length)
+		frameType = frameType.SetOffset(fType.offset)
+		frameType = frameType.SetFin(fType.fin)
+
+		if fType.fType != frameType {
+			t.Log("Failed", i+1, "testcase")
+			t.Fatalf("Expected %b but got %b", fType.fType, frameType)
+		}
+	}
+}
