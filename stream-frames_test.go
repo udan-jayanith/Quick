@@ -1,6 +1,8 @@
 package Quick_test
 
 import (
+	"bufio"
+	"bytes"
 	"testing"
 
 	quick "github.com/udan-jayanith/Quick"
@@ -79,5 +81,41 @@ func TestStreamFrameTypeSetters(t *testing.T) {
 			t.Log("Failed", i+1, "testcase")
 			t.Fatalf("Expected %b but got %b", fType.fType, frameType)
 		}
+	}
+}
+
+func TestReadStreamFrame(t *testing.T) {
+	streamFrame := quick.StreamFrame{
+		Type:     quick.NewStreamFrameType().SetFin(true),
+		StreamID: quick.NewStreamID(quick.ClientInitiatedUndi),
+	}
+	streamFrame.StreamID.Increment()
+
+	buf := make([]byte, 0)
+	if b, err := quick.Int62ToVarint(quick.Int62(streamFrame.Type)); err != nil {
+		t.Fatal(err.Error())
+	} else {
+		buf = append(buf, b...)
+	}
+
+	if b, err := streamFrame.StreamID.ToVariableLength(); err != nil {
+		t.Fatal(err.Error())
+	} else {
+		buf = append(buf, b...)
+	}
+
+	rd := bufio.NewReader(bytes.NewReader(buf))
+	newFrame, err := quick.ReadStreamFrame(rd)
+	if err != quick.NO_ERROR {
+		t.Fatal("Quick frame parsing error", err)
+	}
+
+	t.Log("This test is not enough. Add more testcases after StreamData type of StreamFrame has finalized.")
+	if streamFrame != newFrame {
+		t.Log("Expected")
+		t.Log(ToFormattedJson(streamFrame))
+		t.Log("but got")
+		t.Log(ToFormattedJson(newFrame))
+		t.FailNow()
 	}
 }

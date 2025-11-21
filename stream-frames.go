@@ -6,7 +6,9 @@ import (
 	"io"
 )
 
-// 8 bits long
+// 8 bits long, StreamFrameType can convert to Int62 by doing
+//	Int62(StreamFrameType)
+//	---
 type StreamFrameType uint8
 
 func (sft StreamFrameType) IsValid() bool {

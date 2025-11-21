@@ -5,7 +5,7 @@ import (
 )
 
 // MSB bits is needed for variable sized int62 encoding and decoding.
-// StreamType bits is the LSB. 
+// StreamType bits is the LSB.
 type Int62 uint64
 
 const (
@@ -25,6 +25,7 @@ const (
 	ServerInitiatedUndi                           // 0b_11
 )
 
+// StreamID can convert into variable length int62 by calling ToVariableLength method
 type StreamID struct {
 	streamID Int62
 }
