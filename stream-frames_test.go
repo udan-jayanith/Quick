@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"math/rand"
+	"slices"
 	"testing"
 
 	quick "github.com/udan-jayanith/Quick"
@@ -21,49 +22,53 @@ var (
 			offset: true,
 			length: false,
 			fin:    false,
-			fType:  0b_00_000_100,
+			fType:  0b_00_001_100,
 		},
 		{
 			offset: false,
 			length: true,
 			fin:    false,
-			fType:  0b_00_000_010,
+			fType:  0b_00_001_010,
 		},
 		{
 			offset: false,
 			length: false,
 			fin:    true,
-			fType:  0b_00_000_001,
+			fType:  0b_00_001_001,
 		},
 		{
 			offset: false,
 			length: false,
 			fin:    false,
-			fType:  0b_00_000_000,
+			fType:  0b_00_001_000,
 		},
 		{
 			offset: true,
 			length: true,
 			fin:    false,
-			fType:  0b_00_000_110,
+			fType:  0b_00_001_110,
 		},
 		{
 			offset: true,
 			length: false,
 			fin:    true,
-			fType:  0b_00_000_101,
+			fType:  0b_00_001_101,
 		},
 		{
 			offset: true,
 			length: true,
 			fin:    true,
-			fType:  0b_00_000_111,
+			fType:  0b_00_001_111,
 		},
 	}
 )
 
 func TestStreamFrameTypeGetters(t *testing.T) {
 	for _, fType := range fTypeTestcases {
+		if !fType.fType.IsValid() {
+			t.Fatal("Invalid stream frame type", fType.fType)
+		}
+
 		if fType.offset != fType.fType.GetOffset() {
 			t.Fatal("Expected offset", fType.offset, "but got", fType.fType.GetOffset())
 		} else if fType.length != fType.fType.GetLength() {
@@ -121,7 +126,6 @@ func TestReadStreamFrame(t *testing.T) {
 		t.Fatal("Expected n == 10 but n is", n)
 	}
 
-	t.Log("This test is not enough. Add more testcases after StreamData type of StreamFrame has finalized.")
 	if streamFrame != newFrame {
 		t.Log("Expected")
 		t.Log(ToFormattedJson(streamFrame))
@@ -131,24 +135,71 @@ func TestReadStreamFrame(t *testing.T) {
 	}
 }
 
-func streamFramesGenerator() []quick.StreamFrame {
+func generateStreamFrames() []quick.StreamFrame {
 	res := make([]quick.StreamFrame, 0, len(fTypeTestcases))
 	for _, t := range fTypeTestcases {
 		sf := quick.StreamFrame{
 			Type: t.fType,
 		}
-		//Generate and add a stream ID
+		sf.StreamID = quick.NewStreamID(varint.Int62(rand.Int() % int(quick.MaxStreamID)))
 
 		if t.offset {
 			sf.Offset = varint.Int62(rand.Int63() % int64(varint.MaxInt62))
 		}
 		if t.length {
-			sf.Length = varint.Int62(rand.Int63() % 100)
-			sf.StreamData = bytes.NewReader([]byte(randomstring.HumanFriendlyEnglishString(int(sf.Length))))
+			str := randomstring.HumanFriendlyEnglishString(int(rand.Int63() % 100))
+			sf.Length = varint.Int62(len(str))
+			sf.StreamData = bytes.NewReader([]byte(str))
 		}
 		res = append(res, sf)
 	}
 	return res
 }
 
-// Add stream frame encode and decode.
+func TestStreamFrameEncodeAndDecode(t *testing.T) {
+	for _, sf := range generateStreamFrames() {
+		b, rd, err := sf.Encode()
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		//rd might be nil check for that
+		if rd != nil {
+			b1, err := io.ReadAll(rd)
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+			b = append(b, b1...)
+		}
+
+		newSf, qErr := quick.ReadStreamFrame(bufio.NewReader(bytes.NewReader(b)))
+		if qErr != quick.NO_ERROR {
+			t.Fatal("Unexpected error", qErr)
+		}
+
+		if newSf.StreamData == nil && sf.StreamData != nil {
+			t.Fatal("Missing stream data")
+		} else if newSf.StreamData != nil {
+			b2, err := io.ReadAll(newSf.StreamData)
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+
+			b1 := b[len(b)-int(sf.Length):]
+			if slices.Compare(b1, b2) != 0 {
+				t.Log(string(b1))
+				t.Log(string(b2))
+				t.Fatal("Stream data of the both stream frames are different")
+			}
+		}
+
+		sf.StreamData = nil
+		newSf.StreamData = nil
+		if sf != newSf {
+			t.Log("Expected")
+			t.Log(ToFormattedJson(&sf))
+			t.Log("but got")
+			t.Log(ToFormattedJson(&newSf))
+		}
+	}
+}

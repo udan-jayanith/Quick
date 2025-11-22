@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/udan-jayanith/Quick/varint"
@@ -27,47 +28,53 @@ func (sft StreamFrameType) IsValid() bool {
 }
 
 func (sft StreamFrameType) GetOffset() bool {
-	return sft&0b_00_000_100 == 0b_00_000_100
+	var mask StreamFrameType = 0b_00_001_100
+	return sft&mask == mask
 }
 
 func (sft StreamFrameType) GetLength() bool {
-	return sft&0b_00_00_00_10 == 0b_00_00_00_10
+	var mask StreamFrameType = 0b_00_001_010
+	return sft&mask == mask
 }
 
 // The FIN bit (0x01) indicates that the frame marks the end of the stream.
 // The final size of the stream is the sum of the offset and the length of this frame.
 func (sft StreamFrameType) GetFin() bool {
-	return sft&0b_00_00_00_01 == 0b_00_00_00_01
+	var mask StreamFrameType = 0b_00_00_10_01
+	return sft&mask == mask
 }
 
 func NewStreamFrameType() StreamFrameType {
-	return 0
+	return 0b_1000
 }
 
 func (sft StreamFrameType) SetOffset(v bool) StreamFrameType {
 	//0b_00_000_100
+	var mask StreamFrameType = 0b_00_001_100
 	if v {
-		return sft | 0b_00_000_100
+		return sft | mask
 	} else {
-		return sft & 0b_11_111_011
+		return sft & 0b_00_001_011
 	}
 }
 
 func (sft StreamFrameType) SetLength(v bool) StreamFrameType {
 	//0b_00_00_00_10
+	var mask StreamFrameType = 0b_00_001_010
 	if v {
-		return sft | 0b_00_00_00_10
+		return sft | mask
 	} else {
-		return sft & 0b_11_11_11_01
+		return sft & 0b_00_001_101
 	}
 }
 
 func (sft StreamFrameType) SetFin(v bool) StreamFrameType {
 	//0b_00_00_00_01
+	var mask StreamFrameType = 0b_00_001_001
 	if v {
-		return sft | 0b_00_00_00_01
+		return sft | mask
 	} else {
-		return sft & 0b_11_11_11_10
+		return sft & 0b_00_001_110
 	}
 }
 
@@ -124,6 +131,8 @@ func (sf *StreamFrame) Encode() ([]byte, *bytes.Reader, error) {
 	// StreamFrame type
 	{
 		if !sf.Type.IsValid() {
+			fmt.Printf("%b\n", sf.Type)
+			fmt.Printf("%v\n", sf.Type)
 			return []byte{}, nil, InvalidStreamFrameType
 		}
 
