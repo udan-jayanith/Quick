@@ -16,8 +16,8 @@ const (
 const (
 	ClientInitiatedBidi StreamType = iota + 0b_00 // 0b_00
 	ServerInitiatedBidi                           // 0b_01
-	ClientInitiatedUndi                           // 0b_10
-	ServerInitiatedUndi                           // 0b_11
+	ClientInitiatedUni                           // 0b_10
+	ServerInitiatedUni                           // 0b_11
 )
 
 // StreamID can convert into variable length int62 by calling ToVariableLength method

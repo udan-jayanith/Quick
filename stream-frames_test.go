@@ -96,7 +96,7 @@ func TestStreamFrameTypeSetters(t *testing.T) {
 func TestReadStreamFrame(t *testing.T) {
 	streamFrame := quick.StreamFrame{
 		Type:     quick.NewStreamFrameType().SetFin(true),
-		StreamID: quick.NewStreamID(quick.ClientInitiatedUndi),
+		StreamID: quick.NewStreamID(quick.ClientInitiatedUni),
 	}
 	streamFrame.StreamID.Increment()
 
