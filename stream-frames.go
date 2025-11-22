@@ -3,7 +3,9 @@ package Quick
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
+
 	"github.com/udan-jayanith/Quick/varint"
 )
 
@@ -12,6 +14,10 @@ import (
 //	Int62(StreamFrameType)
 //	---
 type StreamFrameType uint8
+
+var (
+	InvalidStreamFrameType error = errors.New("StreamFrameType is invalid")
+)
 
 func (sft StreamFrameType) IsValid() bool {
 	if sft > 15 || sft < 8 {
@@ -92,9 +98,68 @@ type StreamFrame struct {
 	StreamData *bytes.Reader
 }
 
-func (sf *StreamFrame) Encode() []byte {
-	notImplemented()
-	return []byte{}
+/*
+	STREAM Frame {
+	  Type (i) = 0x08..0x0f,
+	  Stream ID (i),
+	  [Offset (i)],
+	  [Length (i)],
+	  Stream Data (..),
+	}
+*/
+
+// Encode returns
+/*
+	Type (i),
+	Stream ID (i),
+	[Offset (i)],
+	[Length (i)],
+*/
+// as []byte and then returns Stream Data (..) as a reader and an error if any.
+// bytes reader may me empty depending on the StreamFrame.
+// All the return values are invalid if Encode returns an error there for user first must check for errors.
+func (sf *StreamFrame) Encode() ([]byte, *bytes.Reader, error) {
+	buf := make([]byte, 0, 40)
+
+	// StreamFrame type
+	{
+		if !sf.Type.IsValid() {
+			return []byte{}, nil, InvalidStreamFrameType
+		}
+
+		b, err := varint.Int62ToVarint(varint.Int62(sf.Type))
+		if err != nil {
+			return []byte{}, nil, err
+		}
+		buf = append(buf, b...)
+	}
+
+	//Stream ID
+	if b, err := sf.StreamID.ToVariableLength(); err != nil {
+		return []byte{}, nil, err
+	} else {
+		buf = append(buf, b...)
+	}
+
+	//Offset
+	if sf.Type.GetOffset() {
+		b, err := varint.Int62ToVarint(sf.Offset)
+		if err != nil {
+			return []byte{}, nil, err
+		}
+		buf = append(buf, b...)
+	}
+
+	//Length
+	if sf.Type.GetLength() {
+		b, err := varint.Int62ToVarint(sf.Length)
+		if err != nil {
+			return []byte{}, nil, err
+		}
+		buf = append(buf, b...)
+	}
+
+	return buf, sf.StreamData, nil
 }
 
 func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {

@@ -3,10 +3,13 @@ package Quick_test
 import (
 	"bufio"
 	"bytes"
+	"io"
+	"math/rand"
 	"testing"
 
 	quick "github.com/udan-jayanith/Quick"
 	"github.com/udan-jayanith/Quick/varint"
+	"github.com/xyproto/randomstring"
 )
 
 var (
@@ -105,10 +108,17 @@ func TestReadStreamFrame(t *testing.T) {
 		buf = append(buf, b...)
 	}
 
-	rd := bufio.NewReader(bytes.NewReader(buf))
+	// Add few extra bytes to the end the reader to check if ReadStreamFrame reads bytes more then it should.
+	rd := bufio.NewReader(bytes.NewReader(append(buf, make([]byte, 10)...)))
 	newFrame, err := quick.ReadStreamFrame(rd)
 	if err != quick.NO_ERROR {
 		t.Fatal("Quick frame parsing error", err)
+	}
+
+	if n, err := io.ReadFull(rd, make([]byte, 11)); err == nil {
+		t.Fatal("Expected a error but got no error.")
+	} else if n != 10 {
+		t.Fatal("Expected n == 10 but n is", n)
 	}
 
 	t.Log("This test is not enough. Add more testcases after StreamData type of StreamFrame has finalized.")
@@ -120,3 +130,25 @@ func TestReadStreamFrame(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func streamFramesGenerator() []quick.StreamFrame {
+	res := make([]quick.StreamFrame, 0, len(fTypeTestcases))
+	for _, t := range fTypeTestcases {
+		sf := quick.StreamFrame{
+			Type: t.fType,
+		}
+		//Generate and add a stream ID
+
+		if t.offset {
+			sf.Offset = varint.Int62(rand.Int63() % int64(varint.MaxInt62))
+		}
+		if t.length {
+			sf.Length = varint.Int62(rand.Int63() % 100)
+			sf.StreamData = bytes.NewReader([]byte(randomstring.HumanFriendlyEnglishString(int(sf.Length))))
+		}
+		res = append(res, sf)
+	}
+	return res
+}
+
+// Add stream frame encode and decode.
