@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	quick "github.com/udan-jayanith/Quick"
+	"github.com/udan-jayanith/Quick/varint"
 )
 
 var (
@@ -92,7 +93,7 @@ func TestReadStreamFrame(t *testing.T) {
 	streamFrame.StreamID.Increment()
 
 	buf := make([]byte, 0)
-	if b, err := quick.Int62ToVarint(quick.Int62(streamFrame.Type)); err != nil {
+	if b, err := varint.Int62ToVarint(varint.Int62(streamFrame.Type)); err != nil {
 		t.Fatal(err.Error())
 	} else {
 		buf = append(buf, b...)

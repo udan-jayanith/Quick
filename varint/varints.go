@@ -1,10 +1,25 @@
-package Quick
+package varint
 
 import (
 	"bufio"
 	"encoding/binary"
+	"errors"
 	"io"
 )
+
+type Int62 uint64
+
+const (
+	MaxInt62 Int62 = Int62((uint64(1) << 62) - 1) // 2^62-1
+)
+
+var (
+	IntegerOverflow error = errors.New("Integer overflow")
+)
+
+func (int62 Int62) IsOverflowing() bool {
+	return int62 > MaxInt62
+}
 
 func Int62ToVarint(v Int62) ([]byte, error) {
 	/*

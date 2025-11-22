@@ -30,3 +30,9 @@ var (
 		panic("Not implemented")
 	}
 )
+
+// If a StreamFrame sends frames for the same stream with different data to offset that is already filled it should return PROTOCOL_VIOLATION.
+// Sender must ensure that stream is no longer then int62 max value.
+
+// # Features that will be added.
+// * Provide a way to control stream prioritization.

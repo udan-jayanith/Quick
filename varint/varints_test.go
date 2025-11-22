@@ -1,4 +1,4 @@
-package Quick_test
+package varint_test
 
 import (
 	"bufio"
@@ -6,17 +6,17 @@ import (
 	"io"
 	"testing"
 
-	quick "github.com/udan-jayanith/Quick"
+	varint "github.com/udan-jayanith/Quick/varint"
 )
 
 func TestVarInt(t *testing.T) {
-	for _, num := range [...]quick.Int62{0, 60, 63, 16383, 1073741823, 4611686018427387903, 4611686018427387903 / 2} {
-		b, err := quick.Int62ToVarint(num)
+	for _, num := range [...]varint.Int62{0, 60, 63, 16383, 1073741823, 4611686018427387903, 4611686018427387903 / 2} {
+		b, err := varint.Int62ToVarint(num)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		v, err := quick.VarintToInt62(b)
+		v, err := varint.VarintToInt62(b)
 		if err != nil {
 			t.Fatal(err)
 		} else if v != num {
@@ -24,21 +24,21 @@ func TestVarInt(t *testing.T) {
 		}
 	}
 
-	if _, err := quick.Int62ToVarint(4611686018427387903 + 1); err == nil {
+	if _, err := varint.Int62ToVarint(4611686018427387903 + 1); err == nil {
 		t.Fatal("Expected a error but got nil")
 	}
 }
 
 func TestReadVarint62(t *testing.T) {
 	{
-		b, err := quick.Int62ToVarint(73)
+		b, err := varint.Int62ToVarint(73)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
 
 		b = append(b, make([]byte, 10)...)
 		rd := bufio.NewReader(bytes.NewReader(b))
-		v, err := quick.ReadVarint62(rd)
+		v, err := varint.ReadVarint62(rd)
 		if err != nil {
 			t.Fatal(err.Error())
 		} else if v != 73 {
@@ -54,8 +54,8 @@ func TestReadVarint62(t *testing.T) {
 	}
 
 	{
-		var input quick.Int62 = 1073741823
-		b, err := quick.Int62ToVarint(input)
+		var input varint.Int62 = 1073741823
+		b, err := varint.Int62ToVarint(input)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -64,7 +64,7 @@ func TestReadVarint62(t *testing.T) {
 		//Take first two bytes from it.
 		b = b[:3]
 		rd := bufio.NewReader(bytes.NewReader(b))
-		if _, err := quick.ReadVarint62(rd); err == nil {
+		if _, err := varint.ReadVarint62(rd); err == nil {
 			t.Fatal("Expected a error but got no error")
 		}
 	}

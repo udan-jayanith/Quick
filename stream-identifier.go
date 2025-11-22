@@ -1,22 +1,17 @@
 package Quick
 
 import (
-	"errors"
+	"github.com/udan-jayanith/Quick/varint"
 )
 
 // MSB bits is needed for variable sized int62 encoding and decoding.
 // StreamType bits is the LSB.
-type Int62 uint64
+
+type StreamType = varint.Int62
 
 const (
-	MaxStreamID Int62 = Int62((uint64(1) << 62) - 1) // 2^62-1
+	MaxStreamID varint.Int62 = varint.MaxInt62
 )
-
-func (int62 Int62) IsOverflowing() bool {
-	return int62 > MaxStreamID
-}
-
-type StreamType = Int62
 
 const (
 	ClientInitiatedBidi StreamType = iota + 0b_00 // 0b_00
@@ -27,7 +22,7 @@ const (
 
 // StreamID can convert into variable length int62 by calling ToVariableLength method
 type StreamID struct {
-	streamID Int62
+	streamID varint.Int62
 }
 
 func NewStreamID(streamType StreamType) StreamID {
@@ -38,15 +33,11 @@ func NewStreamID(streamType StreamType) StreamID {
 	return streamId
 }
 
-var (
-	IntegerOverflow error = errors.New("Integer overflow")
-)
-
 func (si *StreamID) Increment() error {
 	si.streamID += 4
 	if si.streamID.IsOverflowing() {
 		si.streamID -= 4
-		return IntegerOverflow
+		return varint.IntegerOverflow
 	}
 	return nil
 }
@@ -56,5 +47,5 @@ func (si *StreamID) StreamType() StreamType {
 }
 
 func (si *StreamID) ToVariableLength() ([]byte, error) {
-	return Int62ToVarint(si.streamID)
+	return varint.Int62ToVarint(si.streamID)
 }

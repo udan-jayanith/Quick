@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"github.com/udan-jayanith/Quick/varint"
 )
 
 // 8 bits long, StreamFrameType can convert to Int62 by doing
@@ -80,12 +81,12 @@ type StreamFrame struct {
 	StreamID StreamID
 
 	// Offset is starting index which the StreamData should be place in the stream.
-	Offset Int62
+	Offset varint.Int62
 	// Offset is optional and uses variable length encoding.
 	// If Offset of the frame is not specified in the Type of the frame. Offset of the frame is considered 0.
 
 	// When the Length is 0, the Offset in the STREAM frame is the offset of the next byte that would be sent.
-	Length Int62 // Length is optional and uses variable length encoding.
+	Length varint.Int62 // Length is optional and uses variable length encoding.
 	// Offset of the the stream and the Length of the frame cannot overflow int62.
 
 	StreamData *bytes.Reader
@@ -100,14 +101,14 @@ func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {
 	sf := StreamFrame{}
 
 	//Decode the frame type.
-	if v, err := ReadVarint62(rd); err != nil {
+	if v, err := varint.ReadVarint62(rd); err != nil {
 		return sf, FLOW_CONTROL_ERROR
 	} else {
 		sf.Type = StreamFrameType(v)
 	}
 
 	//Decode stream id
-	if v, err := ReadVarint62(rd); err != nil {
+	if v, err := varint.ReadVarint62(rd); err != nil {
 		return sf, FLOW_CONTROL_ERROR
 	} else {
 		sf.StreamID = NewStreamID(v)
@@ -115,7 +116,7 @@ func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {
 
 	//Decode offset if it's in the frame.
 	if sf.Type.GetOffset() {
-		if v, err := ReadVarint62(rd); err != nil {
+		if v, err := varint.ReadVarint62(rd); err != nil {
 			return sf, FLOW_CONTROL_ERROR
 		} else {
 			sf.Offset = v
@@ -124,7 +125,7 @@ func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {
 
 	//Decode length if it's in the frame.
 	if sf.Type.GetLength() {
-		if v, err := ReadVarint62(rd); err != nil {
+		if v, err := varint.ReadVarint62(rd); err != nil {
 			return sf, FLOW_CONTROL_ERROR
 		} else {
 			sf.Length = v

@@ -1,6 +1,10 @@
 package Quick
 
-type QuickTransportError Int62
+import (
+	"github.com/udan-jayanith/Quick/varint"
+)
+
+type QuickTransportError = varint.Int62
 
 // Do not change the enum order.
 const (
