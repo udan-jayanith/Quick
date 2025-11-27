@@ -43,16 +43,16 @@ func TestStreamID_StreamType(t *testing.T) {
 			output:   StreamIdentifier.ClientInitiatedBidi,
 		},
 		{
-			streamID: StreamIdentifier.NewStreamID(StreamIdentifier.ClientInitiatedUndi),
-			output:   StreamIdentifier.ClientInitiatedUndi,
+			streamID: StreamIdentifier.NewStreamID(StreamIdentifier.ClientInitiatedUni),
+			output:   StreamIdentifier.ClientInitiatedUni,
 		},
 		{
 			streamID: StreamIdentifier.NewStreamID(StreamIdentifier.ServerInitiatedBidi),
 			output:   StreamIdentifier.ServerInitiatedBidi,
 		},
 		{
-			streamID: StreamIdentifier.NewStreamID(StreamIdentifier.ServerInitiatedUndi),
-			output:   StreamIdentifier.ServerInitiatedUndi,
+			streamID: StreamIdentifier.NewStreamID(StreamIdentifier.ServerInitiatedUni),
+			output:   StreamIdentifier.ServerInitiatedUni,
 		},
 	} {
 		st := testcase.streamID.StreamType()
@@ -78,8 +78,8 @@ func TestStreamID_StreamType(t *testing.T) {
 	{
 		streamID := StreamIdentifier.NewStreamID(StreamIdentifier.MaxStreamID)
 		st := streamID.StreamType()
-		if st != StreamIdentifier.ServerInitiatedUndi {
-			t.Fatal("Expected", StreamIdentifier.ServerInitiatedUndi, "but got", st)
+		if st != StreamIdentifier.ServerInitiatedUni {
+			t.Fatal("Expected", StreamIdentifier.ServerInitiatedUni, "but got", st)
 		}
 	}
 

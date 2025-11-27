@@ -101,7 +101,7 @@ func TestStreamFrameTypeSetters(t *testing.T) {
 func TestReadStreamFrame(t *testing.T) {
 	streamFrame := StreamFrame.StreamFrame{
 		Type:     StreamFrame.NewStreamFrameType().SetFin(true),
-		StreamID: StreamIdentifier.NewStreamID(StreamIdentifier.ClientInitiatedUndi),
+		StreamID: StreamIdentifier.NewStreamID(StreamIdentifier.ClientInitiatedUni),
 	}
 	streamFrame.StreamID.Increment()
 
