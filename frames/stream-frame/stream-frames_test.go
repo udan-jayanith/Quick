@@ -1,4 +1,4 @@
-package Quick_test
+package StreamFrame_test
 
 import (
 	"bufio"
@@ -9,14 +9,19 @@ import (
 	"testing"
 
 	quick "github.com/udan-jayanith/Quick"
+	StreamFrame "github.com/udan-jayanith/Quick/frames/stream-frame"
+	StreamIdentifier "github.com/udan-jayanith/Quick/stream-identifier"
 	"github.com/udan-jayanith/Quick/varint"
+
+	//testing libraries
+	Quick_test "github.com/udan-jayanith/Quick/internal/testing"
 	"github.com/xyproto/randomstring"
 )
 
 var (
 	fTypeTestcases = [...]struct {
 		offset, length, fin bool
-		fType               quick.StreamFrameType
+		fType               StreamFrame.StreamFrameType
 	}{
 		{
 			offset: true,
@@ -81,7 +86,7 @@ func TestStreamFrameTypeGetters(t *testing.T) {
 
 func TestStreamFrameTypeSetters(t *testing.T) {
 	for i, fType := range fTypeTestcases {
-		frameType := quick.NewStreamFrameType()
+		frameType := StreamFrame.NewStreamFrameType()
 		frameType = frameType.SetLength(fType.length)
 		frameType = frameType.SetOffset(fType.offset)
 		frameType = frameType.SetFin(fType.fin)
@@ -94,9 +99,9 @@ func TestStreamFrameTypeSetters(t *testing.T) {
 }
 
 func TestReadStreamFrame(t *testing.T) {
-	streamFrame := quick.StreamFrame{
-		Type:     quick.NewStreamFrameType().SetFin(true),
-		StreamID: quick.NewStreamID(quick.ClientInitiatedUndi),
+	streamFrame := StreamFrame.StreamFrame{
+		Type:     StreamFrame.NewStreamFrameType().SetFin(true),
+		StreamID: StreamIdentifier.NewStreamID(StreamIdentifier.ClientInitiatedUndi),
 	}
 	streamFrame.StreamID.Increment()
 
@@ -115,7 +120,7 @@ func TestReadStreamFrame(t *testing.T) {
 
 	// Add few extra bytes to the end the reader to check if ReadStreamFrame reads bytes more then it should.
 	rd := bufio.NewReader(bytes.NewReader(append(buf, make([]byte, 10)...)))
-	newFrame, err := quick.ReadStreamFrame(rd)
+	newFrame, err := StreamFrame.ReadStreamFrame(rd)
 	if err != quick.NO_ERROR {
 		t.Fatal("Quick frame parsing error", err)
 	}
@@ -128,20 +133,20 @@ func TestReadStreamFrame(t *testing.T) {
 
 	if streamFrame != newFrame {
 		t.Log("Expected")
-		t.Log(ToFormattedJson(streamFrame))
+		t.Log(Quick_test.ToFormattedJson(streamFrame))
 		t.Log("but got")
-		t.Log(ToFormattedJson(newFrame))
+		t.Log(Quick_test.ToFormattedJson(newFrame))
 		t.FailNow()
 	}
 }
 
-func generateStreamFrames() []quick.StreamFrame {
-	res := make([]quick.StreamFrame, 0, len(fTypeTestcases))
+func generateStreamFrames() []StreamFrame.StreamFrame {
+	res := make([]StreamFrame.StreamFrame, 0, len(fTypeTestcases))
 	for _, t := range fTypeTestcases {
-		sf := quick.StreamFrame{
+		sf := StreamFrame.StreamFrame{
 			Type: t.fType,
 		}
-		sf.StreamID = quick.NewStreamID(varint.Int62(rand.Int() % int(quick.MaxStreamID)))
+		sf.StreamID = StreamIdentifier.NewStreamID(varint.Int62(rand.Int() % int(StreamIdentifier.MaxStreamID)))
 
 		if t.offset {
 			sf.Offset = varint.Int62(rand.Int63() % int64(varint.MaxInt62))
@@ -172,7 +177,7 @@ func TestStreamFrameEncodeAndDecode(t *testing.T) {
 			b = append(b, b1...)
 		}
 
-		newSf, qErr := quick.ReadStreamFrame(bufio.NewReader(bytes.NewReader(b)))
+		newSf, qErr := StreamFrame.ReadStreamFrame(bufio.NewReader(bytes.NewReader(b)))
 		if qErr != quick.NO_ERROR {
 			t.Fatal("Unexpected error", qErr)
 		}
@@ -197,9 +202,9 @@ func TestStreamFrameEncodeAndDecode(t *testing.T) {
 		newSf.StreamData = nil
 		if sf != newSf {
 			t.Log("Expected")
-			t.Log(ToFormattedJson(&sf))
+			t.Log(Quick_test.ToFormattedJson(&sf))
 			t.Log("but got")
-			t.Log(ToFormattedJson(&newSf))
+			t.Log(Quick_test.ToFormattedJson(&newSf))
 		}
 	}
 }

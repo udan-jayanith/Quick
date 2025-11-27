@@ -1,6 +1,2 @@
-github.com/charmbracelet/hotdiva2000 v0.0.0-20251118143223-ccbaf2141ffb h1:qIGa28AX/koqM06Z5BXwmIm97O5hXctudfwzQIsSUws=
-github.com/charmbracelet/hotdiva2000 v0.0.0-20251118143223-ccbaf2141ffb/go.mod h1:oZAzYcggiFMTsa6iSuDCVM/H08ZBllu2hGSVvUyCf5g=
-github.com/charmbracelet/x/exp/ordered v0.1.0 h1:55/qLwjIh0gL0Vni+QAWk7T/qRVP6sBf+2agPBgnOFE=
-github.com/charmbracelet/x/exp/ordered v0.1.0/go.mod h1:5UHwmG+is5THxMyCJHNPCn2/ecI07aKNrW+LcResjJ8=
 github.com/xyproto/randomstring v1.2.0 h1:y7PXAEBM3XlwJjPG2JQg4voxBYZ4+hPgRdGKCfU8wik=
 github.com/xyproto/randomstring v1.2.0/go.mod h1:rgmS5DeNXLivK7YprL0pY+lTuhNQW3iGxZ18UQApw/E=

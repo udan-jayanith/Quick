@@ -1,4 +1,4 @@
-package Quick_test
+package Testing
 
 import (
 	"encoding/json"
