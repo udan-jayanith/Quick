@@ -25,14 +25,15 @@ Indicates that x is repeated zero or more times and that each instance has a len
 
 //This document uses network byte order (that is, big endian) values.
 
+/*
+UDP datagrams contains one or more packets and may contain one or more frames according to it's type. 
+*/
+
 var (
 	notImplemented = func() {
 		panic("Not implemented")
 	}
 )
-
-// If a StreamFrame sends frames for the same stream with different data to offset that is already filled it should return PROTOCOL_VIOLATION.
-// Sender must ensure that stream is no longer then int62 max value.
 
 // # Features that will be added.
 // * Provide a way to control stream prioritization.

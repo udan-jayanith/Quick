@@ -1,4 +1,4 @@
-package Quick
+package StreamIdentifier
 
 import (
 	"github.com/udan-jayanith/Quick/varint"

@@ -1,4 +1,4 @@
-package Quick
+package StreamFrame
 
 import (
 	"bufio"
@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/udan-jayanith/Quick"
+	StreamIdentifier "github.com/udan-jayanith/Quick/stream-identifier"
 	"github.com/udan-jayanith/Quick/varint"
 )
 
@@ -91,7 +93,7 @@ STREAM Frame {
 // STREAM frames implicitly create a stream and carry stream data.
 type StreamFrame struct {
 	Type     StreamFrameType //Half the byte is empty. Only LS 4 bytes is in use.
-	StreamID StreamID
+	StreamID StreamIdentifier.StreamID
 
 	// Offset is starting index which the StreamData should be place in the stream.
 	Offset varint.Int62
@@ -171,27 +173,27 @@ func (sf *StreamFrame) Encode() ([]byte, *bytes.Reader, error) {
 	return buf, sf.StreamData, nil
 }
 
-func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {
+func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, Quick.QuickTransportError) {
 	sf := StreamFrame{}
 
 	//Decode the frame type.
 	if v, err := varint.ReadVarint62(rd); err != nil {
-		return sf, FLOW_CONTROL_ERROR
+		return sf, Quick.FLOW_CONTROL_ERROR
 	} else {
 		sf.Type = StreamFrameType(v)
 	}
 
 	//Decode stream id
 	if v, err := varint.ReadVarint62(rd); err != nil {
-		return sf, FLOW_CONTROL_ERROR
+		return sf, Quick.FLOW_CONTROL_ERROR
 	} else {
-		sf.StreamID = NewStreamID(v)
+		sf.StreamID = StreamIdentifier.NewStreamID(v)
 	}
 
 	//Decode offset if it's in the frame.
 	if sf.Type.GetOffset() {
 		if v, err := varint.ReadVarint62(rd); err != nil {
-			return sf, FLOW_CONTROL_ERROR
+			return sf, Quick.FLOW_CONTROL_ERROR
 		} else {
 			sf.Offset = v
 		}
@@ -200,7 +202,7 @@ func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {
 	//Decode length if it's in the frame.
 	if sf.Type.GetLength() {
 		if v, err := varint.ReadVarint62(rd); err != nil {
-			return sf, FLOW_CONTROL_ERROR
+			return sf, Quick.FLOW_CONTROL_ERROR
 		} else {
 			sf.Length = v
 		}
@@ -211,19 +213,19 @@ func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuickTransportError) {
 		Receipt of a frame that exceeds this limit MUST be treated as a connection error of type FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 	*/
 	if (sf.Offset + sf.Length).IsOverflowing() {
-		return sf, FLOW_CONTROL_ERROR
+		return sf, Quick.FLOW_CONTROL_ERROR
 	}
 
 	if sf.Length == 0 {
-		return sf, NO_ERROR
+		return sf, Quick.NO_ERROR
 	}
 
 	// Read the stream data
 	buf := make([]byte, sf.Length)
 	if _, err := io.ReadFull(rd, buf); err != nil {
-		return sf, FLOW_CONTROL_ERROR
+		return sf, Quick.FLOW_CONTROL_ERROR
 	}
 
 	sf.StreamData = bytes.NewReader(buf)
-	return sf, NO_ERROR
+	return sf, Quick.NO_ERROR
 }
