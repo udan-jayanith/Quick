@@ -7,6 +7,28 @@ import (
 	"github.com/udan-jayanith/Quick/varint"
 )
 
+// packet number space is the context in which a packet can be processed and acknowledged.
+//
+// Initial packets can only be sent with Initial packet protection keys and acknowledged in packets that are also Initial packets.
+//
+// Similarly, Handshake packets are sent at the Handshake encryption level and can only be acknowledged in Handshake packets.
+type PacketNumberSpace uint8
+
+const (
+	//All Initial packets (Section 17.2.2) are in this space.
+	//
+	//https://datatracker.ietf.org/doc/html/rfc9000#section-12.3-5.2.1
+	InitialSpace PacketNumberSpace = 0 + iota
+	//All Handshake packets (Section 17.2.4) are in this space.
+	//
+	//https://datatracker.ietf.org/doc/html/rfc9000#section-12.3-5.4.1
+	HandshakeSpace
+	//All 0-RTT (Section 17.2.3) and 1-RTT (Section 17.3.1) packets are in this space.
+	//
+	//https://datatracker.ietf.org/doc/html/rfc9000#section-12.3-5.6.1
+	ApplicationDataSpace
+)
+
 const (
 	None varint.Int62 = varint.MaxInt62 + 1
 )
