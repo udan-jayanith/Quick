@@ -31,14 +31,23 @@ const (
 type PacketNumber = varint.Int62
 
 const (
-	None PacketNumber = 0
+	None PacketNumber = varint.MaxInt62 + 1
 )
 
 // Parameter values must derived from the same packet number space.
 func EncodePacketNumber(packetNumber, largestAcknowledgedPacketNumber PacketNumber) ([]byte, error) {
-	if packetNumber.IsOverflowing() || largestAcknowledgedPacketNumber.IsOverflowing() {
+	if packetNumber.IsOverflowing() {
 		return []byte{}, varint.IntegerOverflow
 	}
+
+	/*
+		var numUnacked PacketNumber
+		if largestAcknowledgedPacketNumber == None {
+			numUnacked = packetNumber + 1
+		} else {
+			numUnacked = packetNumber - largestAcknowledgedPacketNumber
+		}
+	*/
 
 	bytes := PacketNumberLength(packetNumber, largestAcknowledgedPacketNumber)
 	b := make([]byte, 8)
@@ -51,26 +60,12 @@ func EncodePacketNumber(packetNumber, largestAcknowledgedPacketNumber PacketNumb
 // From https://go-review.googlesource.com/c/net/+/301451
 // This works only for where packetNumber is larger then arg2
 func PacketNumberLength(packetNumber, largestAcknowledgedPacketNumber PacketNumber) int {
-	/*
-		switch {
-		case d < 0x80:
-			return 1
-		case d < 0x8000:
-			return 2
-		case d < 0x800000:
-			return 3
-		default:
-			return 4
-		}
-	*/
 	a := make([]byte, 0, 8)
 	a = binary.BigEndian.AppendUint64(a, uint64(packetNumber))
 
 	b := make([]byte, 0, 8)
 	b = binary.BigEndian.AppendUint64(b, uint64(largestAcknowledgedPacketNumber))
 
-	a = a[4:]
-	b = b[4:]
 	var cutBytes int
 	for i := range a {
 		if a[i] != b[i] {
@@ -90,43 +85,38 @@ func PacketNumberLength(packetNumber, largestAcknowledgedPacketNumber PacketNumb
 // This is not the right solution
 // This only works if packetNumber doesn't exceed 2^4 and packetNumber greater then largestPacketNumber.
 func DecodePacketNumber(packetNumber []byte, largestPacketNumber PacketNumber) (PacketNumber, error) {
-	if len(packetNumber) > 4 {
-		return 0, varint.IntegerOverflow
-	}
-
-	var returnVal varint.Int62
-	for range 2 {
-		b := make([]byte, 0, 8)
-		b = binary.BigEndian.AppendUint64(b, uint64(largestPacketNumber))
-		copy(b[len(b)-len(packetNumber):], packetNumber)
-		returnVal = PacketNumber(binary.BigEndian.Uint64(b))
-		if returnVal < largestPacketNumber {
-			largestPacketNumber = largestPacketNumber << 1
-			continue
+	/*
+		var returnVal varint.Int62
+		for range 2 {
+			b := make([]byte, 0, 8)
+			b = binary.BigEndian.AppendUint64(b, uint64(largestPacketNumber))
+			copy(b[len(b)-len(packetNumber):], packetNumber)
+			returnVal = PacketNumber(binary.BigEndian.Uint64(b))
+			if returnVal < largestPacketNumber {
+				largestPacketNumber = largestPacketNumber << 1
+				continue
+			}
+			break
 		}
-		break
-	}
-	return returnVal, nil
-	/*	length := len(packetNumber)
-		expected := largestPacketNumber + 1
-		win := PacketNumber(1 << (length * 8))
-		hwin := win / 2
-		mask := win - 1
-		candidate := (expected & ^mask) | PacketNumber(binary.BigEndian.Uint64(fillUpTo8Bytes(packetNumber)))
-		if candidate <= expected-hwin && candidate < 1<<62-win {
-			return candidate + win, nil
-		}
-		if candidate > expected+hwin && candidate >= win {
-			return candidate - win, nil
-		}
-		return candidate, nil
+		return returnVal, nil
 	*/
+	length := len(packetNumber)
+	expected := largestPacketNumber + 1
+	win := PacketNumber(1 << (length * 8))
+	hwin := win / 2
+	mask := win - 1
+	candidate := (expected & ^mask) | PacketNumber(binary.BigEndian.Uint64(fillUpTo8Bytes(packetNumber)))
+	if candidate <= expected-hwin && candidate < 1<<62-win {
+		return candidate + win, nil
+	}
+	if candidate > expected+hwin && candidate >= win {
+		return candidate - win, nil
+	}
+	return candidate, nil
 }
 
 // fillUpTo8Bytes prepend 0 byte values to b to make up for length of b to be 8. len(b) must be less then 9.
-/*
+
 func fillUpTo8Bytes(b []byte) []byte {
 	return append(make([]byte, 8-len(b), 8), b...)
 }
-
-*/

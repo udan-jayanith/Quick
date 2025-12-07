@@ -13,34 +13,9 @@ var (
 		PacketNumber, LargestAckPacketNumber, ExpectedPacketNumber Packet.PacketNumber
 	}{
 		{
-			PacketNumber:           255,
-			LargestAckPacketNumber: 254,
-		},
-		{
-			PacketNumber:           0,
-			LargestAckPacketNumber: 0,
-		},
-		{
-			PacketNumber:           515,
-			LargestAckPacketNumber: 500,
-		},
-		{
-			PacketNumber:           0,
-			LargestAckPacketNumber: 5252,
-		},
-		{
-			PacketNumber:           5252,
-			LargestAckPacketNumber: 582590259,
-		}, {
-			PacketNumber:           140581,
-			LargestAckPacketNumber: 414115,
-		},
-		{
-			PacketNumber:           5,
-			LargestAckPacketNumber: 414115,
-		}, {
-			PacketNumber:           4294967295 + 2,
-			LargestAckPacketNumber: 4294967280,
+			PacketNumber:           0xac5c02,
+			LargestAckPacketNumber: 0xabe8b3,
+			ExpectedPacketNumber:   0xac5c02,
 		},
 	}
 )
