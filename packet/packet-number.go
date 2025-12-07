@@ -88,6 +88,7 @@ func PacketNumberLength(packetNumber, largestAcknowledgedPacketNumber PacketNumb
 // largestPacketNumber is the largest packet number that has been successfully processed in the current packet number space.
 // packetNumber is the value of the Packet Number field.
 // This is not the right solution
+// This only works if packetNumber doesn't exceed 2^4 and packetNumber greater then largestPacketNumber.
 func DecodePacketNumber(packetNumber []byte, largestPacketNumber PacketNumber) (PacketNumber, error) {
 	if len(packetNumber) > 4 {
 		return 0, varint.IntegerOverflow
