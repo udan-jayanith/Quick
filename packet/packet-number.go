@@ -62,10 +62,10 @@ func PacketNumberLength(packetNumber, largestAcknowledgedPacketNumber PacketNumb
 			return 4
 		}
 	*/
-	a := make([]byte, 0)
+	a := make([]byte, 0, 8)
 	a = binary.BigEndian.AppendUint64(a, uint64(packetNumber))
 
-	b := make([]byte, 0)
+	b := make([]byte, 0, 8)
 	b = binary.BigEndian.AppendUint64(b, uint64(largestAcknowledgedPacketNumber))
 
 	a = a[4:]
@@ -91,7 +91,7 @@ func DecodePacketNumber(packetNumber []byte, largestPacketNumber PacketNumber) (
 		return 0, varint.IntegerOverflow
 	}
 
-	b := make([]byte, 0)
+	b := make([]byte, 0, 8)
 	b = binary.BigEndian.AppendUint64(b, uint64(largestPacketNumber))
 	copy(b[len(b)-len(packetNumber):], packetNumber)
 
