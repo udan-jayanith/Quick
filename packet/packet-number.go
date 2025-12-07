@@ -31,7 +31,7 @@ const (
 type PacketNumber = varint.Int62
 
 const (
-	None PacketNumber = varint.MaxInt62 + 1
+	None PacketNumber = 0
 )
 
 // Parameter values must derived from the same packet number space.
@@ -119,7 +119,6 @@ func DecodePacketNumber(packetNumber []byte, largestPacketNumber PacketNumber) (
 }
 
 // fillUpTo8Bytes prepend 0 byte values to b to make up for length of b to be 8. len(b) must be less then 9.
-
 func fillUpTo8Bytes(b []byte) []byte {
 	return append(make([]byte, 8-len(b), 8), b...)
 }
