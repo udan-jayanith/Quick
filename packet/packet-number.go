@@ -2,6 +2,7 @@ package Packet
 
 import (
 	"encoding/binary"
+
 	"github.com/udan-jayanith/Quick/varint"
 )
 
@@ -91,32 +92,39 @@ func DecodePacketNumber(packetNumber []byte, largestPacketNumber PacketNumber) (
 		return 0, varint.IntegerOverflow
 	}
 
-	b := make([]byte, 0, 8)
-	b = binary.BigEndian.AppendUint64(b, uint64(largestPacketNumber))
-	copy(b[len(b)-len(packetNumber):], packetNumber)
-
-	return PacketNumber(binary.BigEndian.Uint64(b)), nil
-	/*
-		noOfBits := len(packetNumber) * 8
-
-		pnWin := PacketNumber(1 << noOfBits)
-		pnHwin := PacketNumber(pnWin / 2)
-		pnMask := PacketNumber(pnWin - 1)
-
-		// The incoming packet number should be greater than
-		// expected_pn - pn_hwin and less than or equal to
-		// expected_pn + pn_hwin
-		//
-		// This means we cannot just strip the trailing bits from
-		// expected_pn and add the truncated_pn because that might
-		// yield a value outside the window.
-
-		truncatedPacketNumber := PacketNumber(binary.BigEndian.Uint64(packetNumber))
-		candidatePacketNumber := (expectedPacketNumber & ^pnMask) | truncatedPacketNumber
-
-		if candidatePacketNumber <= expectedPacketNumber - pnWin{
-
+	var returnVal varint.Int62
+	for range 2 {
+		b := make([]byte, 0, 8)
+		b = binary.BigEndian.AppendUint64(b, uint64(largestPacketNumber))
+		copy(b[len(b)-len(packetNumber):], packetNumber)
+		returnVal = PacketNumber(binary.BigEndian.Uint64(b))
+		if returnVal < largestPacketNumber {
+			largestPacketNumber = largestPacketNumber << 1
+			continue
 		}
+		break
+	}
+	return returnVal, nil
+	/*	length := len(packetNumber)
+		expected := largestPacketNumber + 1
+		win := PacketNumber(1 << (length * 8))
+		hwin := win / 2
+		mask := win - 1
+		candidate := (expected & ^mask) | PacketNumber(binary.BigEndian.Uint64(fillUpTo8Bytes(packetNumber)))
+		if candidate <= expected-hwin && candidate < 1<<62-win {
+			return candidate + win, nil
+		}
+		if candidate > expected+hwin && candidate >= win {
+			return candidate - win, nil
+		}
+		return candidate, nil
 	*/
-	//return 0, nil
 }
+
+// fillUpTo8Bytes prepend 0 byte values to b to make up for length of b to be 8. len(b) must be less then 9.
+/*
+func fillUpTo8Bytes(b []byte) []byte {
+	return append(make([]byte, 8-len(b), 8), b...)
+}
+
+*/

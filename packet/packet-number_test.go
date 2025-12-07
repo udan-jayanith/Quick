@@ -38,6 +38,9 @@ var (
 		{
 			PacketNumber:           5,
 			LargestAckPacketNumber: 414115,
+		}, {
+			PacketNumber:           4294967295 + 2,
+			LargestAckPacketNumber: 4294967280,
 		},
 	}
 )
@@ -57,6 +60,5 @@ func TestPacketNumberEncodingAndDecoding(t *testing.T) {
 		if packetNumber != testcase.PacketNumber {
 			t.Fatalf("Expected %v but got %v at %v\n%s", testcase.PacketNumber, packetNumber, i, Testing.ToFormattedJson(testcase))
 		}
-
 	}
 }
