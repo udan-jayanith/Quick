@@ -66,6 +66,9 @@ func PacketNumberLength(packetNumber, largestAcknowledgedPacketNumber PacketNumb
 	b := make([]byte, 0, 8)
 	b = binary.BigEndian.AppendUint64(b, uint64(largestAcknowledgedPacketNumber))
 
+	a = a[4:]
+	b = b[4:]
+
 	var cutBytes int
 	for i := range a {
 		if a[i] != b[i] {
