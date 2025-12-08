@@ -8,7 +8,7 @@ import (
 	"slices"
 	"testing"
 
-	quick "github.com/udan-jayanith/Quick"
+	QuicErr "github.com/udan-jayanith/Quick/errors"
 	StreamFrame "github.com/udan-jayanith/Quick/frames/stream-frame"
 	StreamIdentifier "github.com/udan-jayanith/Quick/stream-identifier"
 	"github.com/udan-jayanith/Quick/varint"
@@ -121,7 +121,7 @@ func TestReadStreamFrame(t *testing.T) {
 	// Add few extra bytes to the end the reader to check if ReadStreamFrame reads bytes more then it should.
 	rd := bufio.NewReader(bytes.NewReader(append(buf, make([]byte, 10)...)))
 	newFrame, err := StreamFrame.ReadStreamFrame(rd)
-	if err != quick.NO_ERROR {
+	if err != QuicErr.NO_ERROR {
 		t.Fatal("Quick frame parsing error", err)
 	}
 
@@ -178,7 +178,7 @@ func TestStreamFrameEncodeAndDecode(t *testing.T) {
 		}
 
 		newSf, qErr := StreamFrame.ReadStreamFrame(bufio.NewReader(bytes.NewReader(b)))
-		if qErr != quick.NO_ERROR {
+		if qErr != QuicErr.NO_ERROR {
 			t.Fatal("Unexpected error", qErr)
 		}
 

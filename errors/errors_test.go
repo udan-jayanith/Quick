@@ -1,9 +1,9 @@
-package Quick_test
+package QuicErr_test
 
 import (
 	"testing"
 
-	quick "github.com/udan-jayanith/Quick"
+	quick "github.com/udan-jayanith/Quick/errors"
 )
 
 func TestQuickTransportError(t *testing.T) {
