@@ -4,11 +4,11 @@ import (
 	"github.com/udan-jayanith/Quick/varint"
 )
 
-type QuickTransportError varint.Int62
+type Err varint.Int62
 
 // Do not change the enum order.
 const (
-	NO_ERROR                  QuickTransportError = 0x00 + iota //No error
+	NO_ERROR                  Err = 0x00 + iota //No error
 	INTERNAL_ERROR                                              //Implementation error
 	CONNECTION_REFUSED                                          //Server refuses a connection
 	FLOW_CONTROL_ERROR                                          //Flow control error
@@ -25,11 +25,11 @@ const (
 	KEY_UPDATE_ERROR                                            //Invalid packet protection update
 	AEAD_LIMIT_REACHED                                          //Excessive use of packet protection keys
 	NO_VIABLE_PATH                                              //No viable network path exists
-	//CRYPTO_ERROR                                              //0x0100-​0x01ff //TLS alert code
+	//CRYPTO_ERROR                                              //0x0100-0x01ff //TLS alert code
 )
 
 var (
-	errMap map[QuickTransportError]string = map[QuickTransportError]string{
+	errMap map[Err]string = map[Err]string{
 		NO_ERROR:                  "No error",
 		INTERNAL_ERROR:            "The endpoint encountered an internal error and cannot continue with the connection",
 		CONNECTION_REFUSED:        "The server refused to accept a new connection.",
@@ -50,7 +50,7 @@ var (
 	}
 )
 
-func (code QuickTransportError) Error() string {
+func (code Err) Error() (string) {
 	if 0x0100 <= code && 0x01ff >= code {
 		return "The cryptographic handshake failed"
 	}
