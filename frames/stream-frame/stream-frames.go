@@ -173,13 +173,14 @@ func (sf *StreamFrame) Encode() ([]byte, *bytes.Reader, error) {
 	return buf, sf.StreamData, nil
 }
 
-func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuicErr.QuickTransportError) {
+func ReadStreamFrame(rd *bufio.Reader) (StreamFrame, QuicErr.Err) {
 	sf := StreamFrame{}
 
 	//Decode the frame type.
 	if v, err := varint.ReadVarint62(rd); err != nil {
 		return sf, QuicErr.FRAME_ENCODING_ERROR
 	} else {
+		//Check for eligibility of the frame type
 		sf.Type = StreamFrameType(v)
 	}
 
