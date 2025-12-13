@@ -4,6 +4,16 @@ import (
 	Version "github.com/udan-jayanith/Quick/version"
 )
 
+type PacketType = uint8
+
+//mask: 00110000
+const (
+	Initial PacketType = 0
+	RTT0 PacketType = 0b_00010000
+	Handshake PacketType = 0b_00100000
+	Retry PacketType = 0b_00110000
+)
+
 /*
 Long headers are used for packets that are sent prior to the establishment of 1-RTT keys. Once 1-RTT keys are available, a sender switches to sending packets using the short header (Section 17.3). The long form allows for special packets -- such as the Version Negotiation packet -- to be represented in this uniform fixed-length packet format. Packets that use the long header contain the following fields:
 
@@ -30,7 +40,7 @@ type LongHeader struct {
 	FixedBit bool
 	/*The next two bits (those with a mask of 0x30) of byte 0 contain a packet type. Packet types are listed in Table 5.
 	 */
-	LongPacketType uint8
+	LongPacketType PacketType
 	/*The semantics of the lower four bits (those with a mask of 0x0f) of byte 0 are determined by the packet type.*/
 	TypeSpecificBits uint8
 	/*The QUIC Version is a 32-bit field that follows the first byte. This field indicates the version of QUIC that is in use and determines how the rest of the protocol fields are interpreted.*/
